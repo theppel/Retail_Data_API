@@ -67,7 +67,7 @@ def export_customers():
     return Response(
         output.getvalue(),
         mimetype="text/csv",
-        headers={"Content-Disposition": "attachment;filename=products.csv"}
+        headers={"Content-Disposition": "attachment;filename=customers.csv"}
     )
 
 
