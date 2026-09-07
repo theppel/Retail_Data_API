@@ -5,9 +5,9 @@ from flask import Flask, Response
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-app = Flask(__name__)
-
 load_dotenv()
+
+app = Flask(__name__)
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
@@ -22,7 +22,7 @@ def home():
 
 @app.route("/categories")
 def export_csv():
-    response = supabase.table("categories").select("*").execute()
+    response = supabase.table('categories').select("*").execute()
     data = response.data
 
     if not data:
