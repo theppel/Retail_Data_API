@@ -7,14 +7,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# initialise app
 app = Flask(__name__)
 
+# get keys for database
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
+# create client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
+# due to select methods, it will return a nested JSON object
+# this function un-nests it
 def flatten_row(row, parent_key=""):
     flat = {}
     for key, value in row.items():
@@ -26,24 +31,30 @@ def flatten_row(row, parent_key=""):
     return flat
 
 
+# main route
 @app.route("/")
 def home():
     return {"message": "Incorrect Route"}
 
 
+# route for categories
 @app.route("/categories")
 def export_categories():
+    # DB query
     response = supabase.table('categories').select("*").execute()
     data = response.data
 
+    # error message
     if not data:
         return {"error": "No data found"}
 
+    # write to csv
     output = io.StringIO()
     writer = csv.DictWriter(output, fieldnames=data[0].keys())
     writer.writeheader()
     writer.writerows(data)
 
+    # return response
     return Response(
         output.getvalue(),
         mimetype="text/csv",
