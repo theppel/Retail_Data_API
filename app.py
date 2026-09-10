@@ -145,5 +145,30 @@ def export_details():
     )
 
 
+@app.route("/CatTest")
+def export_test():
+    response = supabase.table('order_details').select(
+            "Quantity, UnitCost, UnitPrice, DiscountRate, orders(OrderDate," \
+            "OrderTime), products(ProductName, categories(CategoryName))"
+            ).execute()
+    data = response.data
+
+    if not data:
+        return {"error": "No data found"}
+
+    flattened = [flatten_row(row) for row in data]
+
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=flattened[0].keys())
+    writer.writeheader()
+    writer.writerows(flattened)
+
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=details.csv"}
+    )
+
+
 if __name__ == "__main__":
     app.run(debug=True)
