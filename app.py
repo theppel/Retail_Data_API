@@ -66,7 +66,7 @@ def export_categories():
 @app.route("/customers")
 def export_customers():
     response = supabase.table('order_details').select(
-            "Quantity, UnitCost, UnitPrice, DiscountRate, orders(OrderDate, OrderTime, customers(*))"
+            "Quantity, UnitCost, UnitPrice, DiscountRate, orders(OrderDate, OrderTime, customers(Gender, Age, City, Region, CustomerSegment, SignupDate))"
             ).execute()
     data = response.data
 
@@ -114,7 +114,7 @@ def export_products():
 @app.route("/orders")
 def export_orders():
     response = supabase.table('order_details').select(
-            "Quantity, UnitCost, UnitPrice, DiscountRate, orders(OrderDate, OrderTime, customers(Gender, Age, City, Region, CustomerSegment, SignUpDate))"
+            "Quantity, UnitCost, UnitPrice, DiscountRate, orders(OrderDate, OrderTime)"
             ).execute()
     data = response.data
 
@@ -160,3 +160,6 @@ def export_details():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+# add category name
+# remove customer info from orders
