@@ -41,91 +41,9 @@ def home():
 @app.route("/categories")
 def export_categories():
     # DB query
-    response = supabase.table('categories').select("*").execute()
-    data = response.data
-
-    # error message
-    if not data:
-        return {"error": "No data found"}
-
-    # write to csv
-    output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=data[0].keys())
-    writer.writeheader()
-    writer.writerows(data)
-
-    # return response
-    return Response(
-        output.getvalue(),
-        mimetype="text/csv",
-        headers={"Content-Disposition": "attachment;filename=categories.csv"}
-    )
-
-
-@app.route("/customers")
-def export_customers():
-    response = supabase.table('customers').select("*").execute()
-    data = response.data
-
-    if not data:
-        return {"error": "No data found"}
-
-    output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=data[0].keys())
-    writer.writeheader()
-    writer.writerows(data)
-
-    return Response(
-        output.getvalue(),
-        mimetype="text/csv",
-        headers={"Content-Disposition": "attachment;filename=customers.csv"}
-    )
-
-
-@app.route("/products")
-def export_products():
-    response = supabase.table('products').select("*").execute()
-    data = response.data
-
-    if not data:
-        return {"error": "No data found"}
-
-    output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=data[0].keys())
-    writer.writeheader()
-    writer.writerows(data)
-
-    return Response(
-        output.getvalue(),
-        mimetype="text/csv",
-        headers={"Content-Disposition": "attachment;filename=products.csv"}
-    )
-
-
-@app.route("/orders")
-def export_orders():
-    response = supabase.table('orders').select("*").execute()
-    data = response.data
-
-    if not data:
-        return {"error": "No data found"}
-
-    output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=data[0].keys())
-    writer.writeheader()
-    writer.writerows(data)
-
-    return Response(
-        output.getvalue(),
-        mimetype="text/csv",
-        headers={"Content-Disposition": "attachment;filename=orders.csv"}
-    )
-
-
-@app.route("/details")
-def export_details():
     response = supabase.table('order_details').select(
-        "*, orders(*, customers(*)), products(*, categories(*))").execute()
+                "Quantity, UnitCost, UnitPrice, DiscountRate, orders(OrderDate, OrderTime), products(categories(CategoryName))"
+                ).execute()
     data = response.data
 
     if not data:
@@ -145,12 +63,82 @@ def export_details():
     )
 
 
-@app.route("/CatTest")
-def export_test():
+@app.route("/customers")
+def export_customers():
     response = supabase.table('order_details').select(
-            "Quantity, UnitCost, UnitPrice, DiscountRate, orders(OrderDate," \
-            "OrderTime), products(ProductName, categories(CategoryName))"
+            "Quantity, UnitCost, UnitPrice, DiscountRate, orders(OrderDate, OrderTime, customers(*))"
             ).execute()
+    data = response.data
+
+    if not data:
+        return {"error": "No data found"}
+
+    flattened = [flatten_row(row) for row in data]
+
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=flattened[0].keys())
+    writer.writeheader()
+    writer.writerows(flattened)
+
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=details.csv"}
+    )
+
+
+@app.route("/products")
+def export_products():
+    response = supabase.table('order_details').select(
+                "Quantity, UnitCost, UnitPrice, DiscountRate, orders(OrderDate, OrderTime), products(ProductName, categories(CategoryName))"
+                ).execute()
+    data = response.data
+
+    if not data:
+        return {"error": "No data found"}
+
+    flattened = [flatten_row(row) for row in data]
+
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=flattened[0].keys())
+    writer.writeheader()
+    writer.writerows(flattened)
+
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=details.csv"}
+    )
+
+
+@app.route("/orders")
+def export_orders():
+    response = supabase.table('order_details').select(
+            "Quantity, UnitCost, UnitPrice, DiscountRate, orders(OrderDate, OrderTime, customers(Gender, Age, City, Region, CustomerSegment, SignUpDate))"
+            ).execute()
+    data = response.data
+
+    if not data:
+        return {"error": "No data found"}
+
+    flattened = [flatten_row(row) for row in data]
+
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=flattened[0].keys())
+    writer.writeheader()
+    writer.writerows(flattened)
+
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=details.csv"}
+    )   
+
+
+@app.route("/details")
+def export_details():
+    response = supabase.table('order_details').select(
+        "*, orders(*, customers(*)), products(*, categories(*))").execute()
     data = response.data
 
     if not data:
